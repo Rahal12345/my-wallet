@@ -57,11 +57,11 @@ export default function AddTransaction({ onCancel, onSave }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.header}>
-        <Pressable onPress={onCancel} hitSlop={10}>
-          <Text style={styles.cancel}>Cancel</Text>
+        <Pressable onPress={onCancel} hitSlop={12} style={styles.backBtn}>
+          <Text style={styles.backText}>‹ Back</Text>
         </Pressable>
         <Text style={styles.headerTitle}>New transaction</Text>
-        <View style={{ width: 54 }} />
+        <View style={{ width: 64 }} />
       </View>
 
       <ScrollView
@@ -173,7 +173,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
   },
-  cancel: { color: colors.primary, fontSize: 16, width: 54 },
+  backBtn: { width: 64 },
+  backText: { color: colors.primary, fontSize: 17, fontWeight: '600' },
   headerTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
   body: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
   toggle: {

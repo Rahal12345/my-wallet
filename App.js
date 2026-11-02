@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Onboarding from './src/screens/Onboarding';
 import Home from './src/screens/Home';
@@ -7,7 +8,7 @@ import AddTransaction from './src/screens/AddTransaction';
 import { loadState, saveState } from './src/storage';
 import { colors } from './src/theme';
 
-export default function App() {
+function AppInner() {
   const [state, setState] = useState(null); // null while loading
   const [view, setView] = useState('home'); // 'home' | 'add' | 'editBalance'
 
@@ -89,6 +90,14 @@ export default function App() {
         </View>
       )}
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppInner />
+    </SafeAreaProvider>
   );
 }
 
