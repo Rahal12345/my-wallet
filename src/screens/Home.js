@@ -5,32 +5,55 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { formatDateTime, formatMoney } from '../format';
-import { computeBalance } from '../storage';
-import { colors, spacing } from '../theme';
+} from "react-native";
+import { formatDateTime, formatMoney } from "../format";
+import { computeBalance } from "../storage";
+import { colors, spacing } from "../theme";
 
 // Main screen: current balance on top, transaction history below.
-export default function Home({ state, onAdd, onDelete, onEditBalance }) {
+export default function Home({
+  state,
+  onAdd,
+  onEdit,
+  onDelete,
+  onEditBalance,
+}) {
   const balance = computeBalance(state);
   const txns = [...state.transactions].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
+    (a, b) => new Date(b.date) - new Date(a.date),
   );
+
+  // Long-pressing a row offers Edit or Delete.
+  function rowOptions(txn) {
+    Alert.alert(
+      txn.description || (txn.type === "income" ? "Income" : "Expense"),
+      formatMoney(txn.amount),
+      [
+        { text: "Edit", onPress: () => onEdit(txn) },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => confirmDelete(txn),
+        },
+        { text: "Cancel", style: "cancel" },
+      ],
+    );
+  }
 
   function confirmDelete(txn) {
     Alert.alert(
-      'Delete transaction?',
-      `${txn.description || (txn.type === 'income' ? 'Income' : 'Expense')} — ${formatMoney(
-        txn.amount
+      "Delete transaction?",
+      `${txn.description || (txn.type === "income" ? "Income" : "Expense")} — ${formatMoney(
+        txn.amount,
       )}`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: () => onDelete(txn.id),
         },
-      ]
+      ],
     );
   }
 
@@ -62,20 +85,16 @@ export default function Home({ state, onAdd, onDelete, onEditBalance }) {
         }
         ListEmptyComponent={
           <Text style={styles.empty}>
-            No transactions yet.{'\n'}Tap + to add your first one.
+            No transactions yet.{"\n"}Tap + to add your first one.
           </Text>
         }
         renderItem={({ item }) => {
-          const isIncome = item.type === 'income';
+          const isIncome = item.type === "income";
           return (
-            <Pressable
-              style={styles.row}
-              onLongPress={() => confirmDelete(item)}
-            >
+            <Pressable style={styles.row} onLongPress={() => rowOptions(item)}>
               <View style={styles.rowLeft}>
                 <Text style={styles.rowDesc} numberOfLines={1}>
-                  {item.description ||
-                    (isIncome ? 'Income' : 'Expense')}
+                  {item.description || (isIncome ? "Income" : "Expense")}
                 </Text>
                 <Text style={styles.rowDate}>{formatDateTime(item.date)}</Text>
               </View>
@@ -85,8 +104,8 @@ export default function Home({ state, onAdd, onDelete, onEditBalance }) {
                   { color: isIncome ? colors.income : colors.expense },
                 ]}
               >
-                {isIncome ? '+' : '-'}
-                {formatMoney(item.amount).replace('-', '')}
+                {isIncome ? "+" : "-"}
+                {formatMoney(item.amount).replace("-", "")}
               </Text>
             </Pressable>
           );
@@ -94,7 +113,9 @@ export default function Home({ state, onAdd, onDelete, onEditBalance }) {
       />
 
       {txns.length > 0 && (
-        <Text style={styles.deleteHint}>Long-press a row to delete it.</Text>
+        <Text style={styles.deleteHint}>
+          Long-press a row to edit or delete.
+        </Text>
       )}
 
       {/* Floating add button */}
@@ -113,21 +134,21 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
   },
   balanceLabel: {
     color: colors.textMuted,
     fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   balanceValue: {
     color: colors.text,
     fontSize: 42,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: spacing.sm,
   },
   editBalance: {
@@ -138,53 +159,53 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.textMuted,
     fontSize: 13,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
   },
   listContent: { paddingHorizontal: spacing.md, paddingBottom: 120 },
-  emptyWrap: { flexGrow: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
   empty: {
     color: colors.textMuted,
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.card,
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
   rowLeft: { flex: 1, marginRight: spacing.md },
-  rowDesc: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  rowDesc: { color: colors.text, fontSize: 16, fontWeight: "600" },
   rowDate: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
-  rowAmount: { fontSize: 17, fontWeight: '700' },
+  rowAmount: { fontSize: 17, fontWeight: "700" },
   deleteHint: {
     color: colors.textMuted,
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
     paddingBottom: spacing.sm,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: spacing.lg,
     bottom: spacing.xl + 24,
     width: 60,
     height: 60,
     borderRadius: 30,
     backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  fabText: { color: '#fff', fontSize: 32, fontWeight: '600', marginTop: -2 },
+  fabText: { color: "#fff", fontSize: 32, fontWeight: "600", marginTop: -2 },
 });

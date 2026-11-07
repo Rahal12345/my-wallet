@@ -4,13 +4,17 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Onboarding from './src/screens/Onboarding';
 import Home from './src/screens/Home';
+import Reports from './src/screens/Reports';
 import AddTransaction from './src/screens/AddTransaction';
+import TabBar from './src/components/TabBar';
 import { loadState, saveState } from './src/storage';
 import { colors } from './src/theme';
 
 function AppInner() {
   const [state, setState] = useState(null); // null while loading
-  const [view, setView] = useState('home'); // 'home' | 'add' | 'editBalance'
+  const [view, setView] = useState('home'); // 'home' | 'add' | 'edit' | 'editBalance'
+  const [tab, setTab] = useState('home'); // bottom tab: 'home' | 'reports'
+  const [editing, setEditing] = useState(null); // transaction being edited
 
   // Load persisted state once on startup.
   useEffect(() => {
@@ -46,17 +50,29 @@ function AppInner() {
     <SafeAreaView style={styles.safe}>
       <StatusBar style="light" />
 
-      <Home
-        state={state}
-        onAdd={() => setView('add')}
-        onEditBalance={() => setView('editBalance')}
-        onDelete={(id) =>
-          update({
-            ...state,
-            transactions: state.transactions.filter((t) => t.id !== id),
-          })
-        }
-      />
+      <View style={{ flex: 1 }}>
+        {tab === 'home' ? (
+          <Home
+            state={state}
+            onAdd={() => setView('add')}
+            onEdit={(txn) => {
+              setEditing(txn);
+              setView('edit');
+            }}
+            onEditBalance={() => setView('editBalance')}
+            onDelete={(id) =>
+              update({
+                ...state,
+                transactions: state.transactions.filter((t) => t.id !== id),
+              })
+            }
+          />
+        ) : (
+          <Reports state={state} />
+        )}
+      </View>
+
+      <TabBar active={tab} onChange={setTab} />
 
       {view === 'add' && (
         <View style={StyleSheet.absoluteFill}>
@@ -66,6 +82,30 @@ function AppInner() {
               onSave={(txn) => {
                 update({ ...state, transactions: [...state.transactions, txn] });
                 setView('home');
+              }}
+            />
+          </SafeAreaView>
+        </View>
+      )}
+
+      {view === 'edit' && editing && (
+        <View style={StyleSheet.absoluteFill}>
+          <SafeAreaView style={styles.safe}>
+            <AddTransaction
+              initial={editing}
+              onCancel={() => {
+                setView('home');
+                setEditing(null);
+              }}
+              onSave={(txn) => {
+                update({
+                  ...state,
+                  transactions: state.transactions.map((t) =>
+                    t.id === txn.id ? txn : t
+                  ),
+                });
+                setView('home');
+                setEditing(null);
               }}
             />
           </SafeAreaView>

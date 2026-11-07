@@ -15,12 +15,13 @@ import { formatDateTime } from '../format';
 import { makeId } from '../storage';
 import { colors, spacing } from '../theme';
 
-// Form for logging a single income or expense entry.
-export default function AddTransaction({ onCancel, onSave }) {
-  const [type, setType] = useState('expense');
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(new Date());
+
+export default function AddTransaction({ onCancel, onSave, initial }) {
+  const isEdit = !!initial;
+  const [type, setType] = useState(initial?.type ?? 'expense');
+  const [amount, setAmount] = useState(initial ? String(initial.amount) : '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [date, setDate] = useState(initial ? new Date(initial.date) : new Date());
   const [picker, setPicker] = useState(null); // 'date' | 'time' | null
 
   const parsed = parseFloat(amount);
@@ -28,7 +29,7 @@ export default function AddTransaction({ onCancel, onSave }) {
 
   function handleSave() {
     onSave({
-      id: makeId(),
+      id: initial ? initial.id : makeId(),
       type,
       amount: Math.abs(parsed),
       description: description.trim(),
@@ -60,7 +61,9 @@ export default function AddTransaction({ onCancel, onSave }) {
         <Pressable onPress={onCancel} hitSlop={12} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>New transaction</Text>
+        <Text style={styles.headerTitle}>
+          {isEdit ? 'Edit transaction' : 'New transaction'}
+        </Text>
         <View style={{ width: 64 }} />
       </View>
 
@@ -135,7 +138,9 @@ export default function AddTransaction({ onCancel, onSave }) {
             </Text>
           </Pressable>
         </View>
-        <Text style={styles.hint}>Defaults to now — tap to change.</Text>
+        <Text style={styles.hint}>
+          {isEdit ? 'Tap to change.' : 'Defaults to now — tap to change.'}
+        </Text>
 
         {picker && (
           <DateTimePicker
@@ -155,7 +160,9 @@ export default function AddTransaction({ onCancel, onSave }) {
           onPress={handleSave}
         >
           <Text style={styles.saveText}>
-            Save {type === 'income' ? 'income' : 'expense'}
+            {isEdit
+              ? 'Save changes'
+              : `Save ${type === 'income' ? 'income' : 'expense'}`}
           </Text>
         </Pressable>
       </View>
